@@ -2,7 +2,7 @@
 
 **Candidate:** Kalaimani M
 **Role:** Automation Engineer / SDET
-**Language:** Python 3.11+
+**Language:** Python 3.10+
 **Testing Framework:** Pytest
 
 ---
