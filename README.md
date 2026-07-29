@@ -1,397 +1,129 @@
-# SDET Take-Home Screening Exercise
+# AI_TRANSCRIPT.md
 
-**Candidate:** Kalaimani M
-**Role:** Automation Engineer / SDET
-**Language:** Python 3.10+
-**Testing Framework:** Pytest
-
----
-
-# Repository Structure
-
-```text
-sdet-take-home/
-├── execution_screenshots/
-├── reports/
-├── README.md
-├── AI_TRANSCRIPT.md
-├── requirements.txt
-├── answers.sql
-├── expected_orders.csv
-├── actual_orders.csv
-├── compare_headers.py
-├── test_compare_headers.py
-└── test_orders_api.py
-```
-
----
-
-# Project Overview
-
-This project contains automation solutions for:
-
-* CSV header comparison validation
-* SQL data comparison scenarios
-* API automation testing using Playwright
-* Pytest-based test execution and reporting
-
-The implementation focuses on:
-
-* Clean test structure
-* Reusable automation logic
-* Proper error handling
-* Maintainable test cases
-* Clear documentation
-
----
-
-# Prerequisites
-
-Before running the project, ensure the following are installed:
-
-* Python 3.10 or above
-* MySQL or compatible SQL database
-* Required Python packages
-* Playwright browsers
-
----
-
-# Setup Instructions
-
-## 1. Install Python Dependencies
-
-Install all required packages:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## 2. Install Playwright Browsers
-
-Install Playwright browser dependencies:
-
-```bash
-playwright install
-```
-
----
-
-# Database Setup
-
-Execute the `answers.sql` file in your SQL database.
-
-The SQL script will:
-
-* Create the `products_yesterday` table
-* Create the `products_today` table
-* Insert sample product data
-* Execute SQL queries for all required scenarios
-
----
-
-# SQL Solution Details
-
-The complete SQL implementation is available in:
-
-```text
-answers.sql
-```
-
-## Task 1 – Price Changes
-
-**Approach: INNER JOIN**
-
-* Compares products available in both yesterday and today's tables.
-* Identifies products where the price has changed.
-
-Example scenario:
-
-A product exists in both tables, but the price value is different.
-
----
-
-## Task 2 – New Products
-
-**Approach: LEFT JOIN + IS NULL**
-
-* Finds products that exist only in today's table.
-* Identifies newly added products.
-
----
-
-## Task 3 – Missing Products
-
-**Approach: LEFT JOIN + IS NULL**
-
-* Compares yesterday's products with today's products.
-* Identifies products that existed yesterday but are missing today.
-
----
-
-## Task 4 – Status Changes
-
-**Approach: INNER JOIN**
-
-* Compares product status between both tables.
-* Identifies products where the status has changed.
-
----
-
-## SQL Explanation
-
-The SQL file also includes explanations for:
-
-### Why INNER JOIN or LEFT JOIN?
-
-* `INNER JOIN` is used when we need only matching records from both tables.
-* `LEFT JOIN + IS NULL` is used to find records missing from another table.
-* `NOT EXISTS` can also be used as an alternative approach.
-
----
-
-### Handling Non-Unique Product IDs
-
-If `product_id` is not unique, joins may create duplicate records.
-
-Example:
-
-* Yesterday table contains product_id `1002` twice.
-* Today table contains product_id `1002` twice.
-
-The join result can produce:
-
-```
-2 × 2 = 4 rows
-```
-
-To avoid incorrect results:
-
-* Remove duplicates using `ROW_NUMBER()`
-* Or aggregate records using `GROUP BY`
-
----
-
-### Handling NULL Values
-
-Normal SQL comparisons do not work correctly with NULL values.
-
-Example:
-
-```sql
-NULL <> 100
-```
-
-does not return TRUE.
-
-To handle NULL values:
-
-PostgreSQL:
-
-```sql
-y.price IS DISTINCT FROM t.price
-```
-
-Standard SQL:
-
-```sql
-(
- y.price <> t.price
- OR y.price IS NULL
- OR t.price IS NULL
-)
-```
-
-The same approach applies to status comparison.
-
----
-
-# CSV Header Comparison Tool
-
-## Execute Header Comparison
-
-Run:
-
-```bash
-python compare_headers.py expected_orders.csv actual_orders.csv
-```
-
-The tool compares:
-
-* Missing headers
-* Common headers
-* Header order validation
-
----
-
-## Example Output
-
-```text
-Only in expected_orders.csv:
-amount
-created_at
-country
-
-Only in actual_orders.csv:
-total_amount
-processed_at
-country_code
-
-Common headers:
-order_id
-customer_id
-currency
-status
-
-Common headers in same relative order:
-true
-```
-
----
-
-# Running Automated Tests
-
-## CSV Header Comparison Tests
-
-Execute:
-
-```bash
-python -m pytest test_compare_headers.py -v
-```
-
-With HTML report generation:
-
-```bash
-python -m pytest test_compare_headers.py -v --html=reports/report.html --self-contained-html
-```
-
----
-
-## Expected Result
-
-```
-9 tests passed successfully
-```
-
-The execution report will be generated under:
-
-```text
-reports/report.html
-```
-
----
-
-# API Automation Testing
-
-## Endpoint
-
-```text
-GET /api/orders/{order_id}
-```
-
----
-
-## API Test Coverage
-
-The API automation includes:
-
-* Five API validation test cases
-* One Playwright API automation test
-
-The Playwright API test validates:
-
-* HTTP response status code is `200`
-* Response status value is `"PAID"`
-* Response payload validation
-
----
-
-## API Configuration
-
-The API base URL is currently a placeholder.
-
-Before execution:
-
-1. Open `test_orders_api.py`
-2. Update the base URL with the target environment URL
-3. Execute the test
-
----
-
-# Test Coverage Summary
-
-## CSV Validation
-
-Covered scenarios:
-
-* Header comparison between expected and actual CSV files
-* Missing column detection
-* Common column identification
-* Header order comparison
-* Empty CSV handling
-* Invalid header handling
-* Whitespace trimming
-
----
-
-## API Validation
-
-Covered scenarios:
-
-* API response validation
-* HTTP status verification
-* Response body validation
-* Order status verification
-
----
-
-# Assumptions
-
-* CSV files use comma (`,`) as the delimiter.
-* Only the first row (header row) is compared.
-* Leading and trailing spaces in headers are ignored.
-* Empty CSV files are handled with appropriate validation messages.
-* Invalid header formats are handled safely.
-* API base URL must be updated before execution.
-
----
-
-# AI Usage Statement
-
-I used the following AI tools during this exercise:
+## Tools Used
 
 * ChatGPT (OpenAI)
 * GitHub Copilot (Claude Sonnet 4.6)
 
-AI assistance was used for:
+**Candidate:** Kalaimani M
+**Date:** 29-July-2026
 
-* Generating and reviewing SQL queries.
-* Assisting with Python CSV comparison implementation.
-* Suggesting additional error handling scenarios.
-* Improving documentation and README structure.
-
-All AI-generated suggestions were:
-
-* Reviewed manually
-* Modified where required
-* Tested locally
-* Verified before submission
+**Exercise:** SDET Candidate Screening – TCS / SIX GCC
 
 ---
 
-# Candidate Acknowledgement
+## Summary
+
+I used AI tools to help me understand the requirements, generate an initial solution, review the implementation, and improve the documentation.
+
+All AI-generated suggestions were reviewed before use. I tested the code locally, made changes where required, and verified the outputs manually.
+
+The final submission reflects my own understanding, and I can explain, modify, debug, and extend every part of the solution.
+
+---
+
+## Primary Prompt
+
+Act as a Senior SDET with expertise in Python, SQL, API testing, Playwright, and test automation.
+
+Help me complete an SDET screening assessment that includes:
+
+* SQL queries using two product tables
+* A Python CSV header comparison tool
+* API test case design
+* README and AI usage documentation
+
+Generate clean, readable, and interview-ready solutions using Python best practices. Keep the implementation simple, maintainable, and suitable for a take-home exercise.
+
+---
+
+## AI Assistance Used
+
+AI tools were used for:
+
+* SQL query generation and review
+* Python implementation for the CSV header comparison tool
+* Error-handling suggestions
+* Test case generation and improvements
+* API test case design
+* README and documentation review
+
+---
+
+## What I Accepted
+
+* Overall project structure
+* SQL query logic
+* CSV comparison approach
+* Python function structure
+* Test case organization
+* README structure
+
+---
+
+## What I Modified
+
+* Improved the readability of the Python code.
+* Added additional test cases for edge scenarios.
+* Updated the console output to match the expected format.
+* Added and refined docstrings where appropriate.
+* Reviewed naming conventions and documentation before submission.
+
+---
+
+## What I Verified Manually
+
+### SQL Validation
+
+* Verified the output of all SQL queries using the provided data.
+* Confirmed price changes, new products, missing products, and status changes.
+
+### Python Validation
+
+* Executed the CSV header comparison tool locally.
+* Verified the output against the expected results.
+* Confirmed error handling for:
+
+  * Missing command-line arguments
+  * Missing files
+  * Empty CSV files
+  * Invalid or blank header rows
+
+### Test Validation
+
+* Executed all Python test cases locally.
+* Confirmed that all tests passed successfully.
+
+---
+
+## Key Design Decisions
+
+### Separation of Concerns
+
+Separated the CSV reading, comparison logic, and command-line interface to improve readability, testing, and maintainability.
+
+### Standard Library Usage
+
+Used Python's standard library for CSV processing to keep the solution lightweight and easy to run.
+
+### Error Handling
+
+Handled common user errors with clear messages instead of allowing the program to fail unexpectedly.
+
+### SQL Strategy
+
+* Used `INNER JOIN` to compare matching records.
+* Used `LEFT JOIN` to identify new and missing records.
+* Considered `NULL` values while comparing data.
+
+---
+
+## Candidate Statement
 
 I confirm that:
 
-* I have disclosed my AI usage in `AI_TRANSCRIPT.md`.
-* I reviewed and understood all AI-assisted content.
+* I reviewed all AI-generated content before submission.
+* I tested and verified the solution manually.
+* I understand the complete implementation.
 * I can explain, modify, debug, and extend the submitted solution without AI assistance.
-* The final submission reflects my own understanding, implementation, and decisions.
-
----
-
-# Author
-
-**Kalaimani M**
-Automation Engineer / SDET
+* The final submission reflects my own understanding and decisions.
