@@ -58,6 +58,7 @@ The script will:
 
 ```bash
 python compare_headers.py expected_orders.csv actual_orders.csv
+python -m pytest test_compare_headers.py -v --html=reports/report.html --self-contained-html
 ```
 
 ### Example Output
