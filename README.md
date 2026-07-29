@@ -1,142 +1,184 @@
-# Demo — QA Exercise
+# SDET Take-Home Screening Exercise
 
-## 1. Language Used
-
-- **Python 3.11+**
-- Libraries: `playwright` (API testing), `pytest` (test runner)
+**Candidate:** Kalaimani M
+**Role:** Automation Engineer / SDET
+**Language:** Python 3.11+
+**Testing Framework:** Pytest
 
 ---
 
-## 2. How to Run the CSV Comparison Tool
+# Repository Structure
 
-### Setup
-```bash
-pip install playwright
+```text
+sdet-take-home/
+├── execution_screenshots
+├── reports
+├── README.md
+├── AI_TRANSCRIPT.md
+├── requirements.txt
+├── answers.sql
+├── expected_orders.csv
+├── actual_orders.csv
+├── compare_headers.py
+├── test_compare_headers.py
+└── test_orders_api.py
 ```
 
-### Run
+---
+
+# Prerequisites
+
+* Python 3.10 or above
+* SQL database (MySQL or compatible)
+
+---
+
+# Setup
+
+## 1. Install Dependencies
+
 ```bash
-cd tests/demo
+pip install -r requirements.txt
+playwright install
+python -m pip install playwright
+```
+
+## 2. Database Setup
+
+Run the `answers.sql` script in your SQL database.
+
+The script will:
+
+* Create the `products_yesterday` table.
+* Create the `products_today` table.
+* Insert the sample data.
+* Execute the SQL queries for all required tasks.
+
+## 3. Run the CSV Header Comparison Tool
+
+```bash
 python compare_headers.py expected_orders.csv actual_orders.csv
 ```
 
-### Expected Output
-```
+### Example Output
+
+```text
 Only in expected_orders.csv:
-  amount
-  created_at
-  country
+amount
+created_at
+country
 
 Only in actual_orders.csv:
-  total_amount
-  processed_at
-  country_code
+total_amount
+processed_at
+country_code
 
 Common headers:
-  order_id
-  customer_id
-  currency
-  status
+order_id
+customer_id
+currency
+status
 
 Common headers in same relative order:
-  true
+true
 ```
 
----
+## 4. Run the Unit Tests
 
-## 3. How to Run the Tests
-
-### CSV Header Comparison Tests
 ```bash
-cd tests/demo
-
-# Plain Python runner
-python test_compare_headers.py
-
-# Or with pytest
-pytest test_compare_headers.py -v
+python -m pytest test_compare_headers.py -v
 ```
 
-### API Tests
-```bash
-cd tests/demo
+**Expected Result**
 
-# Plain Python runner
-python test_orders_api.py
+All 9 tests should pass successfully.
 
-# Or with pytest
-pytest test_orders_api.py -v
+---
+
+# SQL Solution
+
+The complete SQL solution is available in **answers.sql**.
+
+### Task 1 – Price Changes
+
+Uses **INNER JOIN** to identify products whose prices have changed between yesterday and today.
+
+### Task 2 – New Products
+
+Uses **LEFT JOIN** with `IS NULL` to identify products that exist only in today's table.
+
+### Task 3 – Missing Products
+
+Uses **LEFT JOIN** in the opposite direction to identify products that existed yesterday but are missing today.
+
+### Task 4 – Status Changes
+
+Uses **INNER JOIN** to identify products whose status has changed.
+
+### Task 5 – Explanation
+
+The SQL file also includes explanations for:
+
+* Why `INNER JOIN` and `LEFT JOIN` were used.
+* How non-unique `product_id` values affect joins.
+* How `NULL` values are handled during comparisons.
+
+---
+
+# API Test Cases
+
+**Endpoint**
+
+```text
+GET /api/orders/{order_id}
 ```
 
----
+The API solution includes:
 
-## 4. SQL Answers
+* Five API test cases.
+* One Playwright API automation test that validates:
 
-File: `tests/mysql.sql`
+  * HTTP Status Code = **200**
+  * Response status = **"PAID"**
 
-| Task | Approach | Key SQL |
-|------|----------|---------|
-| Task 1 — Price Changes | `INNER JOIN` on `product_id`, filter where `price` differs | `WHERE y.price <> t.price OR (NULL guards)` |
-| Task 2 — New Products | `LEFT JOIN` anti-join from today → yesterday | `WHERE y.product_id IS NULL` |
-| Task 3 — Missing Products | `LEFT JOIN` anti-join from yesterday → today | `WHERE t.product_id IS NULL` |
-| Task 4 — Status Changes | `INNER JOIN` on `product_id`, filter where `status` differs | `WHERE y.status <> t.status OR (NULL guards)` |
-
-**Task 5 — Explanations**
-
-1. **JOIN strategy**: `INNER JOIN` for change detection (product must exist in both snapshots). `LEFT JOIN` anti-join for new/missing (asymmetric presence — rows absent on one side).
-
-2. **Non-unique `product_id`**: A join on a non-unique key produces a Cartesian product of all matching rows, inflating results with false positives. Fix with a deduplication CTE, `DISTINCT`, or a `UNIQUE` constraint.
-
-3. **NULL in `price`/`status`**: Standard `<>` returns `UNKNOWN` when either side is `NULL`, silently dropping real changes. Fix: use explicit `OR IS NULL` guards, MySQL's null-safe `<=>` operator, or standard SQL's `IS DISTINCT FROM`.
+The base URL is a placeholder and should be updated before running the test.
 
 ---
 
-## 5. API Test Cases
+# Assumptions
 
-Endpoint: `GET /api/orders/{order_id}`
-
-| # | Test Name | Input | Expected Result | Why Useful |
-|---|-----------|-------|-----------------|------------|
-| 1 | Valid order returns 200 + body | `GET /api/orders/ORD-1001` | HTTP 200, JSON with all fields | Confirms happy path and response contract |
-| 2 | Unknown order returns 404 | `GET /api/orders/ORD-9999` | HTTP 404 | Validates error handling for missing orders |
-| 3 | Response body field types | `GET /api/orders/ORD-1001` | `amount` is float, `order_id` is string, `created_at` is ISO-8601 | Catches silent schema drift |
-| 4 | Invalid order ID format → 400 | `GET /api/orders/INVALID##ID` | HTTP 400 | Ensures malformed input is rejected cleanly |
-| 5 | Status is a known enum value | `GET /api/orders/ORD-1001` | `status` in `{PAID, PENDING, CANCELLED, REFUNDED}` | Guards against unexpected back-end changes |
-
-**Automated test (Task 2):** Uses Playwright's `sync_api.APIRequestContext` — no browser required, no mocking. Replace `BASE_URL` in `test_orders_api.py` with the actual server before running.
+* CSV files use a comma (`,`) as the delimiter.
+* Only the first row (header) of each CSV file is compared.
+* Leading and trailing whitespace in header values is ignored.
+* Empty CSV files and invalid header rows are handled with appropriate error messages.
+* The API base URL should be updated to match the target environment before execution.
 
 ---
 
-## 6. Assumptions
+# AI Usage Statement
 
-- CSV files use comma (`,`) as delimiter and UTF-8 encoding.
-- The first row of each CSV is always the header row.
-- Header comparison is **case-sensitive** (`Status` ≠ `status`).
-- SQL queries assume `product_id` is unique within each snapshot table. Non-unique handling is documented in Task 5.
-- `NULL` values in `price`/`status` are handled explicitly with `OR IS NULL` guards in all comparison queries.
-- API tests target a real server; `BASE_URL` in `test_orders_api.py` must be updated before running against a live environment.
-- `created_at` timestamps follow ISO-8601 format (`YYYY-MM-DDTHH:MM:SSZ`).
+I used the following AI tools during this exercise:
 
----
+* ChatGPT (OpenAI)
+* GitHub Copilot (Claude Sonnet 4.6)
 
-## 7. AI Usage Statement
+AI was used to:
 
-GitHub Copilot was used to assist with:
-- Generating boilerplate code structure for the CSV comparison tool and test files.
-- Suggesting SQL join patterns for change detection queries.
-- Drafting Playwright API test syntax.
+* Generate and review SQL queries.
+* Assist with the Python CSV header comparison tool.
+* Suggest error handling and test cases.
+* Help improve the README and documentation.
 
-All generated code was reviewed, adjusted, and verified to match the exercise requirements. Logic, design decisions, and test case selection were made by the developer.
+All AI-generated content was reviewed, modified where necessary, tested locally, and verified before submission.
 
 ---
 
-## Files in This Folder
+# Candidate Acknowledgement
 
-| File | Description |
-|------|-------------|
-| `compare_headers.py` | CSV header comparison CLI tool |
-| `test_compare_headers.py` | Unit tests for comparison logic (9 tests) |
-| `expected_orders.csv` | Sample expected CSV file |
-| `actual_orders.csv` | Sample actual CSV file |
-| `test_orders_api.py` | Playwright API tests for `GET /api/orders/{order_id}` |
-| `answers.sql` | SQL queries for Parts A (Tasks 1–5) |
+I confirm that:
+
+* I have disclosed my AI usage in **AI_TRANSCRIPT.md**.
+* I reviewed all AI-generated content before submission.
+* I understand the complete solution.
+* I can explain, modify, debug, and extend the submitted solution without AI assistance.
+* The final submission reflects my own understanding and decisions.
