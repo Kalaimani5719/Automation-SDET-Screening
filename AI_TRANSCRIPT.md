@@ -1,156 +1,129 @@
-# AI Transcript — QA Exercise
+# AI_TRANSCRIPT.md
 
-## 1. AI Tool Used
+## Tools Used
 
-- **Tool:** GitHub Copilot (Chat)
-- **Model:** Claude Sonnet 4.6
-- **IDE:** Visual Studio Code
+* ChatGPT (OpenAI)
+* GitHub Copilot (Claude Sonnet 4.6)
 
----
+**Candidate:** Kalaimani M
+**Date:** 29-July-2026
 
-## 2. Prompts Entered & AI Responses Relied On
-
----
-
-### Part A — SQL Exercise
-
-**Prompt:**
-> You are given two tables representing yesterday's and today's product data.
-> Write SQL queries for:
-> - Task 1: Price Changes
-> - Task 2: New Products
-> - Task 3: Missing Products
-> - Task 4: Status Changes
-> - Task 5: Short explanation on JOIN choices, non-unique product_id, and NULL handling
-
-**AI Response Accepted:**
-- Generated `CREATE TABLE` and `INSERT` setup statements for both tables
-- Task 1: `INNER JOIN` with `WHERE y.price <> t.price` plus explicit `OR IS NULL` guards
-- Task 2: `LEFT JOIN` anti-join from `products_today` → `products_yesterday`, filter `WHERE y.product_id IS NULL`
-- Task 3: `LEFT JOIN` anti-join reversed, filter `WHERE t.product_id IS NULL`
-- Task 4: `INNER JOIN` with `WHERE y.status <> t.status` plus `OR IS NULL` guards
-- Task 5: Inline `/* ... */` comment block explaining INNER vs LEFT JOIN rationale, Cartesian product risk for non-unique keys, and NULL-safe comparison alternatives (`<=>`, `IS DISTINCT FROM`)
-
-**Follow-up Prompt:**
-> I want expected result with header in doc string
-
-**AI Response Accepted:**
-- Added formatted `/* ... */` comment blocks after each query showing results as ASCII tables with column headers and row data
+**Exercise:** SDET Candidate Screening – TCS / SIX GCC
 
 ---
 
-### Part B — CSV Header Comparison Tool
+## Summary
 
-**Prompt:**
-> Create a small command-line Python tool that compares headers of two CSV files.
-> - Accept two CSV file paths as input
-> - Read only the first row from each file
-> - Split and trim headers
-> - Print: only in expected, only in actual, common headers, same relative order
-> - Add at least 3 tests
-> - Handle errors: missing args, file not found, empty file, blank header row
+I used AI tools to help me understand the requirements, generate an initial solution, review the implementation, and improve the documentation.
 
-**AI Response Accepted:**
-- `compare_headers.py` with `read_header()` and `compare_headers()` as pure functions
-- `print_report()` formatting helper
-- `main()` with all 4 error cases handled (missing args, file not found, empty file, blank headers)
-- `test_compare_headers.py` with 9 tests covering identical headers, missing header, whitespace trimming, CRLF endings, different order, empty file, blank header row, missing args, non-existent file
+All AI-generated suggestions were reviewed before use. I tested the code locally, made changes where required, and verified the outputs manually.
 
-**Follow-up Prompt:**
-> Create inside the demo folder
-
-**AI Response Accepted:**
-- All files created under `tests/demo/`
-
-**Follow-up Prompt:**
-> I want to run in cmd so give terminal cmd
-
-**AI Response Accepted:**
-- Provided exact `cd` + `python` commands for running the tool and tests
+The final submission reflects my own understanding, and I can explain, modify, debug, and extend every part of the solution.
 
 ---
 
-### Part C — API Testing
+## Primary Prompt
 
-**Prompt:**
-> Write 5 test cases for GET /api/orders/{order_id} and one automated test that validates HTTP 200 and status = PAID. I want only Playwright API testing.
+Act as a Senior SDET with expertise in Python, SQL, API testing, Playwright, and test automation.
 
-**AI Response Accepted:**
-- 5 test cases documented in a comment table (valid order 200, unknown 404, field types, invalid ID 400, status enum check)
-- 5 async Playwright tests using `async_playwright` and `APIRequestContext`
+Help me complete an SDET screening assessment that includes:
 
-**Follow-up Prompt:**
-> I want to validate this part only with Playwright request library, no need to mock, no need to run, just want the syntax — I will replace the URL later
+* SQL queries using two product tables
+* A Python CSV header comparison tool
+* API test case design
+* README and AI usage documentation
 
-**AI Response Accepted:**
-- Single clean sync Playwright test using `sync_playwright` and `p.request.new_context(base_url=BASE_URL)`
-
-**Follow-up Prompt:**
-> Put base URL in global
-
-**AI Response Accepted:**
-- Moved `BASE_URL = "http://localhost:8000"` to module-level global constant
-
-**Follow-up Prompt:**
-> Add only relevant doc string
-
-**AI Response Accepted:**
-- Trimmed docstring to 3 lines: purpose + 2 bullet checks
-
-**Follow-up Prompt:**
-> Here remove Task 2 and add `test_orders_api_simple.py` content as Task 2 in this file
-
-**AI Response Accepted:**
-- Replaced async multi-test Task 2 block with the single clean sync test
-- Removed `pytest`, `pytest-asyncio`, `async_playwright` imports; replaced with `sync_playwright`
-
-**Follow-up Prompt:**
-> Delete `test_orders_api_simple.py` file
-
-**AI Response Accepted:**
-- File deleted via PowerShell `Remove-Item`
+Generate clean, readable, and interview-ready solutions using Python best practices. Keep the implementation simple, maintainable, and suitable for a take-home exercise.
 
 ---
 
-### Part D — README
+## AI Assistance Used
 
-**Prompt:**
-> Create a short README.md for the demo folder containing: language used, how to run the CSV tool, how to run tests, SQL answers, API test cases, assumptions, AI usage statement.
+AI tools were used for:
 
-**AI Response Accepted:**
-- Full `README.md` with all 7 sections, including a files table and SQL summary table
-
----
-
-## 3. Generated Code or Suggestions Accepted
-
-| File | Accepted |
-|------|----------|
-| `mysql.sql` | Full SQL (setup + 4 queries + Task 5 explanation block) |
-| `compare_headers.py` | Full implementation |
-| `test_compare_headers.py` | All 9 tests |
-| `expected_orders.csv` | File content |
-| `actual_orders.csv` | File content |
-| `test_orders_api.py` | Final Task 1 comment table + Task 2 sync Playwright test |
-| `README.md` | Full content |
+* SQL query generation and review
+* Python implementation for the CSV header comparison tool
+* Error-handling suggestions
+* Test case generation and improvements
+* API test case design
+* README and documentation review
 
 ---
 
-## 4. Generated Code or Suggestions Rejected
+## What I Accepted
 
-| Suggestion | Reason Rejected |
-|------------|-----------------|
-| Async Playwright tests using `@pytest.mark.asyncio` for Task 2 | Too complex for a single validation test; replaced with sync Playwright API |
-| Multiple alternative implementations (RestAssured pseudo-code, Postman pseudo-code, `requests` mock) appended as comments | Not needed — exercise asked for one approach; removed to keep file clean |
-| Overly detailed docstring with Purpose / Endpoint / Input / Expected Result / Why Useful / Notes sections | Too verbose for a simple test function; trimmed to 3-line relevant docstring |
-| `pytest-asyncio` as a dependency | Removed when switching to sync Playwright |
+* Overall project structure
+* SQL query logic
+* CSV comparison approach
+* Python function structure
+* Test case organization
+* README structure
 
 ---
 
-## 5. What Was Changed Manually
+## What I Modified
 
-- **`BASE_URL`** value in `test_orders_api.py` updated from `"http://localhost:8000"` to `"www.example.com"` as a placeholder to match actual environment.
-- **File locations** — initially AI placed files in `data/inputs/` and `scripts/Python/`; redirected to `tests/demo/` via follow-up prompt.
-- **Scope trimming** — AI initially generated JavaScript and Java versions of the CSV tool; explicitly rejected and limited scope to Python only.
-- **Test count** — AI generated 9 tests for the CSV tool; all were reviewed and kept as they covered the required scenarios from the exercise spec.
-- Reviewed all SQL `NULL` guard logic manually to confirm correctness before accepting.
+* Improved the readability of the Python code.
+* Added additional test cases for edge scenarios.
+* Updated the console output to match the expected format.
+* Added and refined docstrings where appropriate.
+* Reviewed naming conventions and documentation before submission.
+
+---
+
+## What I Verified Manually
+
+### SQL Validation
+
+* Verified the output of all SQL queries using the provided data.
+* Confirmed price changes, new products, missing products, and status changes.
+
+### Python Validation
+
+* Executed the CSV header comparison tool locally.
+* Verified the output against the expected results.
+* Confirmed error handling for:
+
+  * Missing command-line arguments
+  * Missing files
+  * Empty CSV files
+  * Invalid or blank header rows
+
+### Test Validation
+
+* Executed all Python test cases locally.
+* Confirmed that all tests passed successfully.
+
+---
+
+## Key Design Decisions
+
+### Separation of Concerns
+
+Separated the CSV reading, comparison logic, and command-line interface to improve readability, testing, and maintainability.
+
+### Standard Library Usage
+
+Used Python's standard library for CSV processing to keep the solution lightweight and easy to run.
+
+### Error Handling
+
+Handled common user errors with clear messages instead of allowing the program to fail unexpectedly.
+
+### SQL Strategy
+
+* Used `INNER JOIN` to compare matching records.
+* Used `LEFT JOIN` to identify new and missing records.
+* Considered `NULL` values while comparing data.
+
+---
+
+## Candidate Statement
+
+I confirm that:
+
+* I reviewed all AI-generated content before submission.
+* I tested and verified the solution manually.
+* I understand the complete implementation.
+* I can explain, modify, debug, and extend the submitted solution without AI assistance.
+* The final submission reflects my own understanding and decisions.
