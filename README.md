@@ -11,8 +11,8 @@
 
 ```text
 sdet-take-home/
-├── execution_screenshots
-├── reports
+├── execution_screenshots/
+├── reports/
 ├── README.md
 ├── AI_TRANSCRIPT.md
 ├── requirements.txt
@@ -26,42 +26,206 @@ sdet-take-home/
 
 ---
 
-# Prerequisites
+# Project Overview
 
-* Python 3.10 or above
-* SQL database (MySQL or compatible)
+This project contains automation solutions for:
+
+* CSV header comparison validation
+* SQL data comparison scenarios
+* API automation testing using Playwright
+* Pytest-based test execution and reporting
+
+The implementation focuses on:
+
+* Clean test structure
+* Reusable automation logic
+* Proper error handling
+* Maintainable test cases
+* Clear documentation
 
 ---
 
-# Setup
+# Prerequisites
 
-## 1. Install Dependencies
+Before running the project, ensure the following are installed:
+
+* Python 3.10 or above
+* MySQL or compatible SQL database
+* Required Python packages
+* Playwright browsers
+
+---
+
+# Setup Instructions
+
+## 1. Install Python Dependencies
+
+Install all required packages:
 
 ```bash
 pip install -r requirements.txt
-playwright install
-python -m pip install playwright
 ```
 
-## 2. Database Setup
+---
 
-Run the `answers.sql` script in your SQL database.
+## 2. Install Playwright Browsers
 
-The script will:
+Install Playwright browser dependencies:
 
-* Create the `products_yesterday` table.
-* Create the `products_today` table.
-* Insert the sample data.
-* Execute the SQL queries for all required tasks.
+```bash
+playwright install
+```
 
-## 3. Run the CSV Header Comparison Tool
+---
+
+# Database Setup
+
+Execute the `answers.sql` file in your SQL database.
+
+The SQL script will:
+
+* Create the `products_yesterday` table
+* Create the `products_today` table
+* Insert sample product data
+* Execute SQL queries for all required scenarios
+
+---
+
+# SQL Solution Details
+
+The complete SQL implementation is available in:
+
+```text
+answers.sql
+```
+
+## Task 1 – Price Changes
+
+**Approach: INNER JOIN**
+
+* Compares products available in both yesterday and today's tables.
+* Identifies products where the price has changed.
+
+Example scenario:
+
+A product exists in both tables, but the price value is different.
+
+---
+
+## Task 2 – New Products
+
+**Approach: LEFT JOIN + IS NULL**
+
+* Finds products that exist only in today's table.
+* Identifies newly added products.
+
+---
+
+## Task 3 – Missing Products
+
+**Approach: LEFT JOIN + IS NULL**
+
+* Compares yesterday's products with today's products.
+* Identifies products that existed yesterday but are missing today.
+
+---
+
+## Task 4 – Status Changes
+
+**Approach: INNER JOIN**
+
+* Compares product status between both tables.
+* Identifies products where the status has changed.
+
+---
+
+## SQL Explanation
+
+The SQL file also includes explanations for:
+
+### Why INNER JOIN or LEFT JOIN?
+
+* `INNER JOIN` is used when we need only matching records from both tables.
+* `LEFT JOIN + IS NULL` is used to find records missing from another table.
+* `NOT EXISTS` can also be used as an alternative approach.
+
+---
+
+### Handling Non-Unique Product IDs
+
+If `product_id` is not unique, joins may create duplicate records.
+
+Example:
+
+* Yesterday table contains product_id `1002` twice.
+* Today table contains product_id `1002` twice.
+
+The join result can produce:
+
+```
+2 × 2 = 4 rows
+```
+
+To avoid incorrect results:
+
+* Remove duplicates using `ROW_NUMBER()`
+* Or aggregate records using `GROUP BY`
+
+---
+
+### Handling NULL Values
+
+Normal SQL comparisons do not work correctly with NULL values.
+
+Example:
+
+```sql
+NULL <> 100
+```
+
+does not return TRUE.
+
+To handle NULL values:
+
+PostgreSQL:
+
+```sql
+y.price IS DISTINCT FROM t.price
+```
+
+Standard SQL:
+
+```sql
+(
+ y.price <> t.price
+ OR y.price IS NULL
+ OR t.price IS NULL
+)
+```
+
+The same approach applies to status comparison.
+
+---
+
+# CSV Header Comparison Tool
+
+## Execute Header Comparison
+
+Run:
 
 ```bash
 python compare_headers.py expected_orders.csv actual_orders.csv
-python -m pytest test_compare_headers.py -v --html=reports/report.html --self-contained-html
 ```
 
-### Example Output
+The tool compares:
+
+* Missing headers
+* Common headers
+* Header order validation
+
+---
+
+## Example Output
 
 ```text
 Only in expected_orders.csv:
@@ -84,75 +248,112 @@ Common headers in same relative order:
 true
 ```
 
-## 4. Run the Unit Tests
+---
+
+# Running Automated Tests
+
+## CSV Header Comparison Tests
+
+Execute:
 
 ```bash
 python -m pytest test_compare_headers.py -v
 ```
 
-**Expected Result**
+With HTML report generation:
 
-All 9 tests should pass successfully.
-
----
-
-# SQL Solution
-
-The complete SQL solution is available in **answers.sql**.
-
-### Task 1 – Price Changes
-
-Uses **INNER JOIN** to identify products whose prices have changed between yesterday and today.
-
-### Task 2 – New Products
-
-Uses **LEFT JOIN** with `IS NULL` to identify products that exist only in today's table.
-
-### Task 3 – Missing Products
-
-Uses **LEFT JOIN** in the opposite direction to identify products that existed yesterday but are missing today.
-
-### Task 4 – Status Changes
-
-Uses **INNER JOIN** to identify products whose status has changed.
-
-### Task 5 – Explanation
-
-The SQL file also includes explanations for:
-
-* Why `INNER JOIN` and `LEFT JOIN` were used.
-* How non-unique `product_id` values affect joins.
-* How `NULL` values are handled during comparisons.
+```bash
+python -m pytest test_compare_headers.py -v --html=reports/report.html --self-contained-html
+```
 
 ---
 
-# API Test Cases
+## Expected Result
 
-**Endpoint**
+```
+9 tests passed successfully
+```
+
+The execution report will be generated under:
+
+```text
+reports/report.html
+```
+
+---
+
+# API Automation Testing
+
+## Endpoint
 
 ```text
 GET /api/orders/{order_id}
 ```
 
-The API solution includes:
+---
 
-* Five API test cases.
-* One Playwright API automation test that validates:
+## API Test Coverage
 
-  * HTTP Status Code = **200**
-  * Response status = **"PAID"**
+The API automation includes:
 
-The base URL is a placeholder and should be updated before running the test.
+* Five API validation test cases
+* One Playwright API automation test
+
+The Playwright API test validates:
+
+* HTTP response status code is `200`
+* Response status value is `"PAID"`
+* Response payload validation
+
+---
+
+## API Configuration
+
+The API base URL is currently a placeholder.
+
+Before execution:
+
+1. Open `test_orders_api.py`
+2. Update the base URL with the target environment URL
+3. Execute the test
+
+---
+
+# Test Coverage Summary
+
+## CSV Validation
+
+Covered scenarios:
+
+* Header comparison between expected and actual CSV files
+* Missing column detection
+* Common column identification
+* Header order comparison
+* Empty CSV handling
+* Invalid header handling
+* Whitespace trimming
+
+---
+
+## API Validation
+
+Covered scenarios:
+
+* API response validation
+* HTTP status verification
+* Response body validation
+* Order status verification
 
 ---
 
 # Assumptions
 
-* CSV files use a comma (`,`) as the delimiter.
-* Only the first row (header) of each CSV file is compared.
-* Leading and trailing whitespace in header values is ignored.
-* Empty CSV files and invalid header rows are handled with appropriate error messages.
-* The API base URL should be updated to match the target environment before execution.
+* CSV files use comma (`,`) as the delimiter.
+* Only the first row (header row) is compared.
+* Leading and trailing spaces in headers are ignored.
+* Empty CSV files are handled with appropriate validation messages.
+* Invalid header formats are handled safely.
+* API base URL must be updated before execution.
 
 ---
 
@@ -163,14 +364,19 @@ I used the following AI tools during this exercise:
 * ChatGPT (OpenAI)
 * GitHub Copilot (Claude Sonnet 4.6)
 
-AI was used to:
+AI assistance was used for:
 
-* Generate and review SQL queries.
-* Assist with the Python CSV header comparison tool.
-* Suggest error handling and test cases.
-* Help improve the README and documentation.
+* Generating and reviewing SQL queries.
+* Assisting with Python CSV comparison implementation.
+* Suggesting additional error handling scenarios.
+* Improving documentation and README structure.
 
-All AI-generated content was reviewed, modified where necessary, tested locally, and verified before submission.
+All AI-generated suggestions were:
+
+* Reviewed manually
+* Modified where required
+* Tested locally
+* Verified before submission
 
 ---
 
@@ -178,8 +384,14 @@ All AI-generated content was reviewed, modified where necessary, tested locally,
 
 I confirm that:
 
-* I have disclosed my AI usage in **AI_TRANSCRIPT.md**.
-* I reviewed all AI-generated content before submission.
-* I understand the complete solution.
+* I have disclosed my AI usage in `AI_TRANSCRIPT.md`.
+* I reviewed and understood all AI-assisted content.
 * I can explain, modify, debug, and extend the submitted solution without AI assistance.
-* The final submission reflects my own understanding and decisions.
+* The final submission reflects my own understanding, implementation, and decisions.
+
+---
+
+# Author
+
+**Kalaimani M**
+Automation Engineer / SDET
